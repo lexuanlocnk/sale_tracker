@@ -1,0 +1,30 @@
+// processList.scss
+
+
+.table-header {
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+
+.table td,
+.table th {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.blue-text {
+  color: #3c8dbc;
+  font-weight: 600;
+}
+
+.red-text {
+  color: #f77255;
+  font-weight: 600;
+}

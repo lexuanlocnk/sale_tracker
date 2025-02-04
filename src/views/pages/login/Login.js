@@ -83,8 +83,6 @@ const Login = () => {
     console.error('Post login data is error', error)
   }
 
-  // if (loading) return <LoadingPage />
-
   return (
     <>
       <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">

@@ -9,6 +9,7 @@ import {
   CImage,
   CRow,
   CTable,
+  CTooltip,
 } from '@coreui/react'
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -152,26 +153,37 @@ function ProcressList() {
   }
 
   const items =
-    dataTracker?.data && dataTracker?.data?.length > 0
-      ? dataTracker?.data?.map((item) => ({
+    dataTracker && dataTracker?.length > 0
+      ? dataTracker?.map((item) => ({
           startTime: <div>{item?.start_time}</div>,
           endTime: <div>{item?.end_time}</div>,
-          sale: <div className="blue-text">{item?.business_name}</div>,
+          sale: <div className=" blue-text">{item?.business_name}</div>,
           phone: <div className="fw-bold">{item?.user_name}</div>,
-          customer: <div className="blue-text">{item?.customer_name}</div>,
+          customer: (
+            <CTooltip content={item?.customer_name}>
+              <div className="truncate blue-text">{item?.customer_name}</div>
+            </CTooltip>
+          ),
           products: <div>{item?.item}</div>,
-          quantity: <div className="red-text">{item?.quantity}</div>,
+
+          quantity: (
+            <CTooltip content={item?.quantity}>
+              <div className="red-text">{item?.quantity}</div>
+            </CTooltip>
+          ),
           price: <div className="red-text">{item?.price}</div>,
-          results: <div>{item?.sales_result}</div>,
-          upadte: <div>{item?.created_at}</div>,
+          results: (
+            <CTooltip content={item?.sales_result}>
+              <div className="truncate">{item?.sales_result}</div>
+            </CTooltip>
+          ),
+          suggestions: (
+            <CTooltip content={item?.suggestions}>
+              <div className="truncate blue-text">{item?.suggestions}</div>
+            </CTooltip>
+          ),
           actions: (
-            <div className="d-flex">
-              <button
-                onClick={() => handleEditClick(item.news_id)}
-                className="button-action mr-2 bg-info"
-              >
-                <CIcon icon={cilColorBorder} className="text-white" />
-              </button>
+            <div>
               <button
                 onClick={() => {
                   setVisible(true)
@@ -190,12 +202,12 @@ function ProcressList() {
   const columns = [
     {
       key: 'startTime',
-      label: 'Thời gian bắt đầu',
+      label: 'T/g bắt đầu',
       _props: { scope: 'col', className: 'table-header' },
     },
     {
       key: 'endTime',
-      label: 'Thời gian kết thúc',
+      label: 'T/g kết thúc',
       _props: { scope: 'col', className: 'table-header' },
     },
     {
@@ -211,6 +223,7 @@ function ProcressList() {
     {
       key: 'customer',
       label: 'Tên khách hàng',
+
       _props: { scope: 'col', className: 'table-header' },
     },
     {
@@ -228,9 +241,22 @@ function ProcressList() {
       label: 'Giá',
       _props: { scope: 'col', className: 'table-header' },
     },
+
     {
       key: 'results',
       label: 'Kết quả bán hàng',
+      _props: { scope: 'col', className: 'table-header' },
+    },
+
+    {
+      key: 'suggestions',
+      label: 'Gợi ý cho kinh doanh',
+      _props: { scope: 'col', className: 'table-header' },
+    },
+
+    {
+      key: 'actions',
+      label: 'Tác vụ',
       _props: { scope: 'col', className: 'table-header' },
     },
   ]
@@ -252,24 +278,6 @@ function ProcressList() {
             <CCol>
               <h3>QUẢN LÝ KHÁCH HÀNG</h3>
             </CCol>
-            {/* <CCol md={6}>
-              <div className="d-flex justify-content-end">
-                <CButton
-                  onClick={handleAddNewClick}
-                  color="primary"
-                  type="submit"
-                  size="sm"
-                  className="button-add"
-                >
-                  Thêm mới
-                </CButton>
-                <Link to={'/promotion-news'}>
-                  <CButton color="primary" type="submit" size="sm">
-                    Danh sách
-                  </CButton>
-                </Link>
-              </div>
-            </CCol> */}
           </CCol>
 
           <CCol xs={12}>
@@ -291,7 +299,7 @@ function ProcressList() {
                   <tbody>
                     <tr>
                       <td>Tổng cộng</td>
-                      <td className="total-count">{dataTracker?.total}</td>
+                      <td className="total-count">{dataTracker?.length}</td>
                     </tr>
                     <tr>
                       <td>Lọc theo vị trí</td>
@@ -341,20 +349,22 @@ function ProcressList() {
             {isLoading ? (
               <Loading />
             ) : (
-              <CCol>
-                <CTable
-                  style={{ fontSize: 13 }}
-                  hover
-                  className="mt-3 border"
-                  columns={columns}
-                  items={items}
-                />
+              <CCol className="table-container">
+                <div className="table-responsive">
+                  <CTable
+                    style={{ fontSize: 12, minWidth: '1000px' }}
+                    hover
+                    className="mt-3 border "
+                    columns={columns}
+                    items={items}
+                  />
+                </div>
               </CCol>
             )}
 
             <div className="d-flex justify-content-end">
               <ReactPaginate
-                pageCount={Math.ceil(dataTracker?.total / dataTracker?.per_page)}
+                pageCount={Math.ceil(dataTracker?.length / 10)}
                 pageRangeDisplayed={3}
                 marginPagesDisplayed={1}
                 pageClassName="page-item"

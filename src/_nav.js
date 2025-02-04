@@ -30,26 +30,27 @@ const _nav = [
         name: 'Thông tin admin',
         to: '/admin/ThongTinAdmin',
       },
-      // {
-      //   component: CNavItem,
-      //   name: 'Quản lý nhóm admin',
-      //   to: '/admin/QuanLiNhomAdmin',
-      // },
-      // {
-      //   component: CNavItem,
-      //   name: 'Quản lý tài khoản admin',
-      //   to: '/admin/QuanLiTaiKhoanAdmin',
-      // },
+
+      {
+        component: CNavItem,
+        name: 'Quản lý nhóm kinh doanh',
+        to: '/admin/QuanLiPhongBan',
+      },
+      {
+        component: CNavItem,
+        name: 'Quản lý tài khoản admin',
+        to: '/admin/QuanLiTaiKhoanAdmin',
+      },
       // {
       //   component: CNavItem,
       //   name: 'Thêm quyền hạn',
       //   to: '/admin/ThemQuyenHan',
       // },
-      // {
-      //   component: CNavItem,
-      //   name: 'Lịch sử hoạt động admin',
-      //   to: '/admin/LichSuHoatDong',
-      // },
+      {
+        component: CNavItem,
+        name: 'Lịch sử hoạt động admin',
+        to: '/admin/LichSuHoatDong',
+      },
     ],
   },
 

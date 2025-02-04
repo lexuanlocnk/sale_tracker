@@ -1,4 +1,14 @@
-import { CButton, CCol, CContainer, CForm, CFormInput, CImage, CRow, CSpinner } from '@coreui/react'
+import {
+  CButton,
+  CCol,
+  CContainer,
+  CForm,
+  CFormInput,
+  CFormSelect,
+  CImage,
+  CRow,
+  CSpinner,
+} from '@coreui/react'
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { axiosClient, imageBaseUrl } from '../../axiosConfig'
@@ -10,42 +20,12 @@ function AdminInfo() {
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
+  const [role, setRole] = useState('Nhân viên')
+  const [businessGroups, setBusinessGroups] = useState([])
 
   const [avatarFile, setAvatarFile] = useState(null)
-  const [previewUrl, setPreviewUrl] = useState('')
 
   const [isLoading, setIsLoading] = useState(false)
-
-  // upload image and show image
-  const [selectedFile, setSelectedFile] = useState('')
-  const [file, setFile] = useState([])
-
-  //set img avatar
-  function onFileChange(e) {
-    const files = e.target.files
-    const selectedFiles = []
-    const fileUrls = []
-
-    Array.from(files).forEach((file) => {
-      // Create a URL for the file
-      fileUrls.push(URL.createObjectURL(file))
-
-      // Read the file as base64
-      const fileReader = new FileReader()
-      fileReader.readAsDataURL(file)
-
-      fileReader.onload = (event) => {
-        selectedFiles.push(event.target.result)
-        // Set base64 data after all files have been read
-        if (selectedFiles.length === files.length) {
-          setSelectedFile(selectedFiles)
-        }
-      }
-    })
-
-    // Set file URLs for immediate preview
-    setFile(fileUrls)
-  }
 
   const fetchAdminInformation = async () => {
     try {
@@ -89,27 +69,15 @@ function AdminInfo() {
   //   }
   // }
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setAvatarFile(file)
-      setPreviewUrl(URL.createObjectURL(file))
-    }
+  const handleBusinessGroupsChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value)
+    setBusinessGroups(selectedOptions)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
       setIsLoading(true)
-
-      const formData = new FormData()
-      formData.append('email', email)
-      formData.append('display_name', displayName)
-      formData.append('phone', phone)
-
-      if (avatarFile) {
-        formData.append('avatar', avatarFile)
-      }
 
       const response = await axiosClient.post(`admin/profile`, formData, {
         headers: {
@@ -173,7 +141,7 @@ function AdminInfo() {
               />
             </CCol>
 
-            {/* <CCol md={12}>
+            <CCol md={12}>
               <CFormInput
                 id="inputAddress"
                 label="Thư điện tử"
@@ -181,7 +149,16 @@ function AdminInfo() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </CCol> */}
+            </CCol>
+
+            <CCol md={12}>
+              <CFormInput
+                id="inputAddress2"
+                label="Số điện thoại"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </CCol>
 
             <CCol md={12}>
               <CFormInput
@@ -192,15 +169,6 @@ function AdminInfo() {
                 onChange={(e) => setDisplayName(e.target.value)}
               />
             </CCol>
-
-            {/* <CCol md={12}>
-              <CFormInput
-                id="inputAddress2"
-                label="Số điện thoại"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </CCol> */}
 
             <CCol xs={12}>
               <CButton

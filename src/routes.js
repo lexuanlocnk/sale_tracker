@@ -18,10 +18,12 @@ const EditPermission = React.lazy(() => import('./views/admin/EditPermissions'))
 // process tab
 const ProcessList = React.lazy(() => import('./views/process/ProcessList'))
 
+// deparment category
+const DepartmentCategory = React.lazy(() => import('./views/department/DepartmentCategory.js'))
 // customer tab
 
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
+  { path: '/', exact: true, name: 'Home', elements: ProcessList },
 
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
@@ -30,6 +32,12 @@ const routes = [
 
   { path: '/admin', name: 'Admin', element: AdminInfo, exact: true },
   { path: '/admin/ThongTinAdmin', name: 'AdminInfo', element: AdminInfo },
+  {
+    path: '/admin/QuanLiPhongBan',
+    name: 'Procress List',
+    element: DepartmentCategory,
+    exact: true,
+  },
   { path: '/admin/QuanLiNhomAdmin', name: 'AdminGroup', element: AdminGroup },
   { path: '/admin/QuanLiTaiKhoanAdmin', name: 'AdminList', element: AdminList },
   { path: '/admin/LichSuHoatDong', name: 'AdminLog', element: AdminLog },

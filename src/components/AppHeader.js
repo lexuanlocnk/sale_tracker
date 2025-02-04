@@ -54,7 +54,7 @@ const AppHeader = () => {
         </CHeaderToggler>
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
-            <CNavLink to="/dataTracker" as={NavLink} style={{ fontWeight: 500, fontSize: 16 }}>
+            <CNavLink to="/dataTracking" as={NavLink} style={{ fontWeight: 500, fontSize: 16 }}>
               Trang chủ
             </CNavLink>
           </CNavItem>

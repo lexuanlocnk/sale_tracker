@@ -8,8 +8,17 @@
 }
 
 .table {
-  table-layout: fixed;
+  // table-layout: fixed;
   width: 100%;
+}
+
+
+.truncate {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 

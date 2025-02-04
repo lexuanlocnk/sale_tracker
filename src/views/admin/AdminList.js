@@ -77,6 +77,7 @@ function AdminList() {
     phone: '',
     displayName: '',
     role: '',
+    groups: [],
   }
 
   const validationSchema = Yup.object({
@@ -487,13 +488,6 @@ function AdminList() {
                       <br />
 
                       <CCol md={12}>
-                        <label htmlFor="phone-input">Số điện thoại</label>
-                        <Field name="phone" type="text" as={CFormInput} id="phone-input" />
-                        <ErrorMessage name="phone" component="div" className="text-danger" />
-                      </CCol>
-                      <br />
-
-                      <CCol md={12}>
                         <label htmlFor="display-name-input">Tên hiển thị</label>
                         <Field
                           name="displayName"
@@ -506,43 +500,34 @@ function AdminList() {
                       <br />
 
                       <CCol md={12}>
-                        <CFormInput
-                          name="avatar"
-                          type="file"
-                          id="formFile"
-                          label="Ảnh đại diện"
-                          size="sm"
-                          onChange={(e) => onFileChange(e)}
-                        />
-                        <br />
-                        <ErrorMessage name="avatar" component="div" className="text-danger" />
-
-                        <div>
-                          {file.length == 0 ? (
-                            <div>
-                              <CImage src={`${imageBaseUrl}` + selectedFile} width={370} />
-                            </div>
-                          ) : (
-                            file.map((item, index) => <CImage key={index} src={item} width={370} />)
-                          )}
-                        </div>
-                      </CCol>
-                      <br />
-
-                      <CCol md={12}>
-                        <label htmlFor="role-select">Vai trò</label>
+                        <label htmlFor="role-select">Chức vụ</label>
                         <Field
                           name="role"
                           as={CFormSelect}
                           id="role-select"
                           options={[
-                            { label: 'Chọn vai trò', value: '', disabled: true },
-                            ...(dataRole && dataRole?.length > 0
-                              ? dataRole?.map((role) => ({ label: role.title, value: role.id }))
-                              : []),
+                            { label: 'Chọn chức vụ', value: '', disabled: true },
+                            { label: 'Trưởng nhóm', value: 1, disabled: true },
+                            { label: 'Nhân viên', value: 0, disabled: true },
                           ]}
                         />
                         <ErrorMessage name="role" component="div" className="text-danger" />
+                      </CCol>
+                      <br />
+
+                      <CCol md={12}>
+                        <label htmlFor="groups-select">Nhóm kinh doanh</label>
+                        <Field
+                          name="groups"
+                          as={CFormSelect}
+                          id="groups-select"
+                          options={[
+                            { label: 'Chọn nhóm kinh doanh', value: '', disabled: true },
+                            { label: 'Máy in', value: '1' },
+                            { label: 'Mực in', value: '2' },
+                          ]}
+                        />
+                        <ErrorMessage name="groups" component="div" className="text-danger" />
                       </CCol>
                       <br />
 

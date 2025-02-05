@@ -5,7 +5,6 @@ import {
   CContainer,
   CFormCheck,
   CFormInput,
-  CFormSelect,
   CFormTextarea,
   CRow,
   CSpinner,
@@ -58,20 +57,12 @@ function DepartmentCategory() {
   const initialValues = {
     title: '',
     description: '',
-    manageBy: '',
-    // friendlyUrl: '',
-    // pageTitle: '',
-    // metaKeyword: '',
-    // metaDesc: '',
-    // visible: 0,
   }
+
+  const [formValues, setFormValues] = useState(initialValues)
 
   const validationSchema = Yup.object({
     title: Yup.string().required('Tiêu đề là bắt buộc.'),
-    friendlyUrl: Yup.string().required('Chuỗi đường dẫn là bắt buộc.'),
-    pageTitle: Yup.string().required('Tiêu đề bài viết là bắt buộc.'),
-    metaKeyword: Yup.string().required('Meta keywords là bắt buộc.'),
-    metaDesc: Yup.string().required('Meta description là bắt buộc.'),
   })
 
   useEffect(() => {
@@ -87,11 +78,9 @@ function DepartmentCategory() {
 
   const fetchDataNewsCategory = async (dataSearch = '') => {
     try {
-      const response = await axiosClient.get(
-        `admin/news-category?data=${dataSearch}&page=${pageNumber}`,
-      )
-      if (response.data.status === true) {
-        setDataNewsCategroy(response.data.list)
+      const response = await axiosClient.get(`group?data=${dataSearch}&page=${pageNumber}`)
+      if (response.data && response.data.status === true) {
+        setDataNewsCategroy(response.data.data)
       }
 
       if (response.data.status === false && response.data.mess == 'no permission') {
@@ -106,19 +95,14 @@ function DepartmentCategory() {
     fetchDataNewsCategory()
   }, [pageNumber])
 
-  const fetchDataById = async (setValues) => {
+  const fetchDataById = async () => {
     try {
-      const response = await axiosClient.get(`admin/news-category/${id}/edit`)
-      const data = response.data.newsCategory
+      const response = await axiosClient.get(`group/${id}`)
+      const data = response.data.data
       if (data) {
-        setValues({
-          title: data?.news_category_desc.cat_name,
-          description: data?.news_category_desc.description,
-          friendlyUrl: data?.news_category_desc.friendly_url,
-          pageTitle: data?.news_category_desc.friendly_title,
-          metaKeyword: data?.news_category_desc.metakey,
-          metaDesc: data?.news_category_desc.metadesc,
-          visible: data.display,
+        setFormValues({
+          title: data?.name,
+          description: data?.description,
         })
       } else {
         console.error('No data found for the given ID.')
@@ -135,6 +119,10 @@ function DepartmentCategory() {
       console.error('Fetch data id news category is error', error.message)
     }
   }
+
+  useEffect(() => {
+    fetchDataById()
+  }, [id])
 
   const handleSubmit = async (values, { resetForm }) => {
     if (isEditing) {
@@ -203,11 +191,11 @@ function DepartmentCategory() {
   }
 
   const handleAddNewClick = () => {
-    navigate('/news/category?sub=add')
+    navigate('/admin/QuanLiPhongBan?sub=add')
   }
 
   const handleEditClick = (id) => {
-    navigate(`/news/category?id=${id}&sub=edit`)
+    navigate(`/admin/QuanLiPhongBan?id=${id}&sub=edit`)
   }
 
   // delete row
@@ -270,14 +258,14 @@ function DepartmentCategory() {
       ? dataNewsCategory.map((item) => ({
           id: (
             <CFormCheck
-              key={item?.cat_id}
+              key={item?.id}
               aria-label="Default select example"
-              defaultChecked={item?.cat_id}
-              id={`flexCheckDefault_${item?.cat_id}`}
-              value={item?.cat_id}
-              checked={selectedCheckbox.includes(item?.cat_id)}
+              defaultChecked={item?.id}
+              id={`flexCheckDefault_${item?.id}`}
+              value={item?.id}
+              checked={selectedCheckbox.includes(item?.id)}
               onChange={(e) => {
-                const categoriesId = item?.cat_id
+                const categoriesId = item?.id
                 const isChecked = e.target.checked
                 if (isChecked) {
                   setSelectedCheckbox([...selectedCheckbox, categoriesId])
@@ -287,12 +275,12 @@ function DepartmentCategory() {
               }}
             />
           ),
-          title: item?.news_category_desc?.cat_name,
-          url: item?.news_category_desc?.friendly_url,
+          title: item?.name,
+          manageBy: item?.manager_name,
           actions: (
             <div>
               <button
-                onClick={() => handleEditClick(item.cat_id)}
+                onClick={() => handleEditClick(item.id)}
                 className="button-action mr-2 bg-info"
               >
                 <CIcon icon={cilColorBorder} className="text-white" />
@@ -300,7 +288,7 @@ function DepartmentCategory() {
               <button
                 onClick={() => {
                   setVisible(true)
-                  setDeletedId(item.cat_id)
+                  setDeletedId(item.id)
                 }}
                 className="button-action bg-danger"
               >
@@ -323,7 +311,7 @@ function DepartmentCategory() {
             const isChecked = e.target.checked
             setIsAllCheckbox(isChecked)
             if (isChecked) {
-              const allIds = dataNewsCategory?.map((item) => item.cat_id) || []
+              const allIds = dataNewsCategory?.map((item) => item.id) || []
               setSelectedCheckbox(allIds)
             } else {
               setSelectedCheckbox([])
@@ -339,8 +327,8 @@ function DepartmentCategory() {
     },
 
     {
-      key: 'url',
-      label: 'Chuỗi đường dẫn',
+      key: 'manageBy',
+      label: 'Trưởng nhóm',
       _props: { scope: 'col' },
     },
     {
@@ -382,14 +370,12 @@ function DepartmentCategory() {
           <CCol md={4}>
             <h6>{!isEditing ? 'Thêm danh mục mới' : 'Cập nhật danh mục'}</h6>
             <Formik
-              initialValues={initialValues}
+              initialValues={formValues}
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
+              enableReinitialize
             >
-              {({ setFieldValue, setValues }) => {
-                useEffect(() => {
-                  fetchDataById(setValues)
-                }, [setValues, id])
+              {({ setFieldValue }) => {
                 return (
                   <Form>
                     <CCol md={12}>

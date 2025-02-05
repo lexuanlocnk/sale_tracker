@@ -78,13 +78,9 @@ function AdminInfo() {
     try {
       setIsLoading(true)
 
-      const response = await axiosClient.post(`admin/profile`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: localStorage.getItem('saleToken')
-            ? `Bearer ${localStorage.getItem('saleToken')}`
-            : '',
-        },
+      const response = await axiosClient.put(`profile/update`, {
+        display_name: displayName,
+        email: email,
       })
 
       if (response.data.status === true) {
@@ -105,15 +101,6 @@ function AdminInfo() {
         <CCol md={6}>
           <h3>THÔNG TIN NHÂN VIÊN</h3>
           <h6>Thông tin tài khoản</h6>
-        </CCol>
-        <CCol md={6}>
-          <div className="d-flex justify-content-end">
-            <Link to={'/admin/list'}>
-              <CButton color="primary" size="sm">
-                Thêm mới
-              </CButton>
-            </Link>
-          </div>
         </CCol>
       </CRow>
       <CRow>

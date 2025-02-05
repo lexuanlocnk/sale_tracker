@@ -27,6 +27,7 @@ function ProcressList() {
   const navigate = useNavigate()
 
   const [dataTracker, setDataTracker] = useState([])
+  const [countData, setCountData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
   // check permission state
@@ -55,14 +56,6 @@ function ProcressList() {
   // search input
   const [dataSearch, setDataSearch] = useState('')
 
-  const handleAddNewClick = () => {
-    navigate('/news/add')
-  }
-
-  const handleEditClick = (id) => {
-    navigate(`/news/edit?id=${id}`)
-  }
-
   // search Data
   const handleSearch = (keyword) => {
     fetchDataTracker(keyword)
@@ -74,6 +67,7 @@ function ProcressList() {
       const response = await axiosClient.get(`admin/news-category`)
       if (response.data.status === true) {
         setDataNewsCategroy(response.data.list)
+        setCountData(response.data.count)
       }
     } catch (error) {
       console.error('Fetch data news is error', error)
@@ -88,10 +82,11 @@ function ProcressList() {
 
   const fetchDataTracker = async (dataSearch = '') => {
     try {
-      const response = await axiosClient.get(`sales/index`)
+      const response = await axiosClient.get(`sales/index?page=${pageNumber}`)
 
       if (response.data && response.data.status === true) {
         setDataTracker(response.data.data)
+        setCountData(response.data.count)
       }
 
       if (response.data.status === false && response.data.mess == 'no permission') {
@@ -299,7 +294,7 @@ function ProcressList() {
                   <tbody>
                     <tr>
                       <td>Tổng cộng</td>
-                      <td className="total-count">{dataTracker?.length}</td>
+                      <td className="total-count">{countData}</td>
                     </tr>
                     <tr>
                       <td>Lọc theo vị trí</td>
@@ -364,7 +359,7 @@ function ProcressList() {
 
             <div className="d-flex justify-content-end">
               <ReactPaginate
-                pageCount={Math.ceil(dataTracker?.length / 10)}
+                pageCount={Math.ceil(countData / 10)}
                 pageRangeDisplayed={3}
                 marginPagesDisplayed={1}
                 pageClassName="page-item"

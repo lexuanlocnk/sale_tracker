@@ -58,11 +58,12 @@ function DepartmentCategory() {
   const initialValues = {
     title: '',
     description: '',
-    friendlyUrl: '',
-    pageTitle: '',
-    metaKeyword: '',
-    metaDesc: '',
-    visible: 0,
+    manageBy: '',
+    // friendlyUrl: '',
+    // pageTitle: '',
+    // metaKeyword: '',
+    // metaDesc: '',
+    // visible: 0,
   }
 
   const validationSchema = Yup.object({
@@ -419,71 +420,6 @@ function DepartmentCategory() {
                         text="Mô tả bình thường không được sử dụng trong giao diện, tuy nhiên có vài giao diện hiện thị mô tả này."
                       />
                       <ErrorMessage name="description" component="div" className="text-danger" />
-                    </CCol>
-                    <br />
-                    <h6>Search Engine Optimization</h6>
-                    <br />
-                    <CCol md={12}>
-                      <label htmlFor="url-input">Chuỗi đường dẫn</label>
-                      <Field
-                        name="friendlyUrl"
-                        type="text"
-                        as={CFormInput}
-                        id="url-input"
-                        text="Chuỗi dẫn tĩnh là phiên bản của tên hợp chuẩn với Đường dẫn (URL). Chuỗi này bao gồm chữ cái thường, số và dấu gạch ngang (-). VD: vi-tinh-nguyen-kim-to-chuc-su-kien-tri-an-dip-20-nam-thanh-lap"
-                      />
-                      <ErrorMessage name="friendlyUrl" component="div" className="text-danger" />
-                    </CCol>
-                    <br />
-                    <CCol md={12}>
-                      <label htmlFor="pageTitle-input">Tiêu đề trang</label>
-                      <Field
-                        name="pageTitle"
-                        type="text"
-                        as={CFormInput}
-                        id="pageTitle-input"
-                        text="Độ dài của tiêu đề trang tối đa 60 ký tự."
-                      />
-                      <ErrorMessage name="pageTitle" component="div" className="text-danger" />
-                    </CCol>
-                    <br />
-                    <CCol md={12}>
-                      <label htmlFor="metaKeyword-input">Meta keywords</label>
-                      <Field
-                        name="metaKeyword"
-                        type="text"
-                        as={CFormTextarea}
-                        id="metaKeyword-input"
-                        text="Độ dài của meta keywords chuẩn là từ 100 đến 150 ký tự, trong đó có ít nhất 4 dấu phẩy (,)."
-                      />
-                      <ErrorMessage name="metaKeyword" component="div" className="text-danger" />
-                    </CCol>
-                    <br />
-                    <CCol md={12}>
-                      <label htmlFor="metaDesc-input">Meta description</label>
-                      <Field
-                        name="metaDesc"
-                        type="text"
-                        as={CFormTextarea}
-                        id="metaDesc-input"
-                        text="Thẻ meta description chỉ nên dài khoảng 140 kí tự để có thể hiển thị hết được trên Google. Tối đa 200 ký tự."
-                      />
-                      <ErrorMessage name="metaDesc" component="div" className="text-danger" />
-                    </CCol>
-                    <br />
-
-                    <CCol md={12}>
-                      <label htmlFor="visible-select">Hiển thị</label>
-                      <Field
-                        name="visible"
-                        as={CFormSelect}
-                        id="visible-select"
-                        options={[
-                          { label: 'Không', value: '0' },
-                          { label: 'Có', value: '1' },
-                        ]}
-                      />
-                      <ErrorMessage name="visible" component="div" className="text-danger" />
                     </CCol>
                     <br />
 

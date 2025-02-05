@@ -29,14 +29,13 @@ function AdminInfo() {
 
   const fetchAdminInformation = async () => {
     try {
-      const response = await axiosClient.get(`/admin/edit`)
+      const response = await axiosClient.get(`/profile`)
       const data = response.data.admin_detail
       if (response.data && response.data.status === true) {
         setUserName(data.username)
-        // setEmail(data.email)
-        setDisplayName(data.username)
-        // setPhone(data.phone)
-        // setAvatarFile(data.avatar)
+        setEmail(data.email)
+        setDisplayName(data.display_name)
+        setPhone(data.username)
       }
     } catch (error) {
       console.error('Fetch admin info data is error', error)

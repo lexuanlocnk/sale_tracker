@@ -5,6 +5,7 @@ import {
   CCol,
   CContainer,
   CFormCheck,
+  CFormInput,
   CFormSelect,
   CImage,
   CRow,
@@ -29,6 +30,9 @@ function ProcressList() {
   const [dataTracker, setDataTracker] = useState([])
   const [countData, setCountData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   // check permission state
   const [isPermissionCheck, setIsPermissionCheck] = useState(true)
@@ -60,25 +64,6 @@ function ProcressList() {
   const handleSearch = (keyword) => {
     fetchDataTracker(keyword)
   }
-
-  const fetchDataNewsCategory = async () => {
-    try {
-      setIsLoading(true)
-      const response = await axiosClient.get(`admin/news-category`)
-      if (response.data.status === true) {
-        setDataNewsCategroy(response.data.list)
-        setCountData(response.data.count)
-      }
-    } catch (error) {
-      console.error('Fetch data news is error', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchDataNewsCategory()
-  }, [])
 
   const fetchDataTracker = async (dataSearch = '') => {
     try {
@@ -117,7 +102,7 @@ function ProcressList() {
   const handleDelete = async () => {
     setVisible(true)
     try {
-      const response = await axiosClient.delete(`admin/news/${deletedId}`)
+      const response = await axiosClient.delete(`sales/${deletedId}`)
       if (response.data.status === true) {
         setVisible(false)
         fetchDataTracker()
@@ -134,8 +119,9 @@ function ProcressList() {
 
   const handleDeleteSelectedCheckbox = async () => {
     try {
-      const response = await axiosClient.post('admin/delete-all-news', {
-        data: selectedCheckbox,
+      const response = await axiosClient.post('/sale/delete', {
+        ids: selectedCheckbox,
+        _method: 'DELETE',
       })
       if (response.data.status === true) {
         toast.success('Xóa tất cả các mục thành công!')
@@ -150,10 +136,28 @@ function ProcressList() {
   const items =
     dataTracker && dataTracker?.length > 0
       ? dataTracker?.map((item) => ({
+          id: (
+            <CFormCheck
+              key={item?.id}
+              aria-label="Default select example"
+              defaultChecked={item?.id}
+              id={`flexCheckDefault_${item?.id}`}
+              value={item?.id}
+              checked={selectedCheckbox.includes(item?.id)}
+              onChange={(e) => {
+                const saleId = item?.id
+                const isChecked = e.target.checked
+                if (isChecked) {
+                  setSelectedCheckbox([...selectedCheckbox, saleId])
+                } else {
+                  setSelectedCheckbox(selectedCheckbox.filter((id) => id !== saleId))
+                }
+              }}
+            />
+          ),
           startTime: <div>{item?.start_time}</div>,
           endTime: <div>{item?.end_time}</div>,
           sale: <div className=" blue-text">{item?.business_name}</div>,
-          // phone: <div className="fw-bold">{item?.user_name}</div>,
           customer: (
             <CTooltip content={item?.customer_name}>
               <div className="truncate blue-text">{item?.customer_name}</div>
@@ -182,7 +186,7 @@ function ProcressList() {
               <button
                 onClick={() => {
                   setVisible(true)
-                  setDeletedId(item.news_id)
+                  setDeletedId(item.id)
                 }}
                 className="button-action bg-danger"
               >
@@ -195,6 +199,25 @@ function ProcressList() {
       : []
 
   const columns = [
+    {
+      key: 'id',
+      label: (
+        <CFormCheck
+          aria-label="Select all"
+          checked={isAllCheckbox}
+          onChange={(e) => {
+            const isChecked = e.target.checked
+            setIsAllCheckbox(isChecked)
+            if (isChecked) {
+              const allIds = dataTracker?.map((item) => item.id) || []
+              setSelectedCheckbox(allIds)
+            } else {
+              setSelectedCheckbox([])
+            }
+          }}
+        />
+      ),
+    },
     {
       key: 'startTime',
       label: 'T/g bắt đầu',
@@ -210,11 +233,6 @@ function ProcressList() {
       label: 'Tên kinh doanh',
       _props: { scope: 'col', className: 'table-header' },
     },
-    // {
-    //   key: 'phone',
-    //   label: 'Số điện thoại',
-    //   _props: { scope: 'col', className: 'table-header' },
-    // },
     {
       key: 'customer',
       label: 'Tên khách hàng',
@@ -297,23 +315,26 @@ function ProcressList() {
                       <td className="total-count">{countData}</td>
                     </tr>
                     <tr>
-                      <td>Lọc theo vị trí</td>
+                      <td>Lọc theo ngày</td>
                       <td>
-                        <CFormSelect
-                          className="component-size w-50"
-                          aria-label="Chọn yêu cầu lọc"
-                          options={[
-                            { label: 'Chọn danh mục', value: '' },
-                            ...(dataNewsCategory && dataNewsCategory.length > 0
-                              ? dataNewsCategory.map((group) => ({
-                                  label: group?.news_category_desc?.cat_name,
-                                  value: group.cat_id,
-                                }))
-                              : []),
-                          ]}
-                          value={selectedCategory}
-                          onChange={(e) => setSelectedCategory(e.target.value)}
-                        />
+                        <div className="d-flex gap-4">
+                          <div>
+                            <label>Từ ngày:</label>
+                            <CFormInput
+                              type="date"
+                              value={startDate}
+                              onChange={(e) => setStartDate(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <label>Đến ngày:</label>
+                            <CFormInput
+                              type="date"
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                            />
+                          </div>
+                        </div>
                       </td>
                     </tr>
                     <tr>
@@ -335,11 +356,11 @@ function ProcressList() {
               </table>
             </CCol>
 
-            {/* <CCol md={12} className="mt-3">
+            <CCol md={12} className="mt-3">
               <CButton onClick={handleDeleteSelectedCheckbox} color="primary" size="sm">
                 Xóa mục đã chọn
               </CButton>
-            </CCol> */}
+            </CCol>
 
             {isLoading ? (
               <Loading />

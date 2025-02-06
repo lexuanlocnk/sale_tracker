@@ -28,21 +28,6 @@ const AppHeaderDropdown = () => {
     navigate('/login')
   }
 
-  const fetchAdminInfo = async () => {
-    try {
-      const response = await axiosClient.get('/admin/information')
-      if (response.data.status === true) {
-        setAvatar(response.data.admin_detail.avatar)
-      }
-    } catch (error) {
-      console.error('Fetch data admin info error', error)
-    }
-  }
-
-  useEffect(() => {
-    fetchAdminInfo()
-  }, [])
-
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end " className="py-0 pe-0" caret={false}>

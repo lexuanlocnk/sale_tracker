@@ -226,7 +226,7 @@ function AdminList() {
   const handleDelete = async () => {
     setVisible(true)
     try {
-      const response = await axiosClient.delete(`/admin/information/${deletedId}`)
+      const response = await axiosClient.delete(`/admin/${deletedId}`)
       if (response.data.status === true) {
         setVisible(false)
         fetchAdminListData()

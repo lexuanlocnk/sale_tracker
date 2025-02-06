@@ -153,7 +153,7 @@ function ProcressList() {
           startTime: <div>{item?.start_time}</div>,
           endTime: <div>{item?.end_time}</div>,
           sale: <div className=" blue-text">{item?.business_name}</div>,
-          phone: <div className="fw-bold">{item?.user_name}</div>,
+          // phone: <div className="fw-bold">{item?.user_name}</div>,
           customer: (
             <CTooltip content={item?.customer_name}>
               <div className="truncate blue-text">{item?.customer_name}</div>
@@ -210,11 +210,11 @@ function ProcressList() {
       label: 'Tên kinh doanh',
       _props: { scope: 'col', className: 'table-header' },
     },
-    {
-      key: 'phone',
-      label: 'Số điện thoại',
-      _props: { scope: 'col', className: 'table-header' },
-    },
+    // {
+    //   key: 'phone',
+    //   label: 'Số điện thoại',
+    //   _props: { scope: 'col', className: 'table-header' },
+    // },
     {
       key: 'customer',
       label: 'Tên khách hàng',

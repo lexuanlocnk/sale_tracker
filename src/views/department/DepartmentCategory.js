@@ -40,8 +40,7 @@ function DepartmentCategory() {
   // loading button
   const [isLoading, setIsLoading] = useState(false)
 
-  const [dataNewsCategory, setDataNewsCategroy] = useState([])
-  const [countNewsCategory, setCountNewsCategory] = useState(null)
+  const [dataGroupAdmin, setDataGroupAdmin] = useState([])
 
   // show deleted Modal
   const [visible, setVisible] = useState(false)
@@ -76,11 +75,11 @@ function DepartmentCategory() {
     }
   }, [location.search])
 
-  const fetchDataNewsCategory = async (dataSearch = '') => {
+  const fetchDataGroupsAdmin = async (dataSearch = '') => {
     try {
       const response = await axiosClient.get(`group?data=${dataSearch}&page=${pageNumber}`)
       if (response.data && response.data.status === true) {
-        setDataNewsCategroy(response.data.data)
+        setDataGroupAdmin(response.data.data)
       }
 
       if (response.data.status === false && response.data.mess == 'no permission') {
@@ -92,7 +91,7 @@ function DepartmentCategory() {
   }
 
   useEffect(() => {
-    fetchDataNewsCategory()
+    fetchDataGroupsAdmin()
   }, [pageNumber])
 
   const fetchDataById = async () => {
@@ -129,21 +128,19 @@ function DepartmentCategory() {
       //call api update data
       try {
         setIsLoading(true)
-        const response = await axiosClient.put(`admin/news-category/${id}`, {
-          cat_name: values.title,
+        const response = await axiosClient.put(`group/${id}`, {
+          name: values.title,
           description: values.description,
-          friendly_url: values.friendlyUrl,
-          friendly_title: values.pageTitle,
-          metakey: values.metaKeyword,
-          metadesc: values.metaDesc,
-          display: values.visible,
         })
         if (response.data.status === true) {
-          toast.success('Cập nhật danh mục thành công')
-          resetForm()
-          navigate('/news/category')
+          toast.success('Cập nhật nhóm kinh doanh thành công')
+          setFormValues({
+            title: '',
+            description: '',
+          })
+          navigate('/admin/QuanLiPhongBan')
           setIsEditing(false)
-          fetchDataNewsCategory()
+          fetchDataGroupsAdmin()
         } else {
           console.error('No data found for the given ID.')
         }
@@ -152,7 +149,7 @@ function DepartmentCategory() {
           toast.warn('Bạn không có quyền thực hiện tác vụ này!')
         }
       } catch (error) {
-        console.error('Put data id news category is error', error.message)
+        console.error('Put data id admin groups is error', error.message)
         toast.error('Đã xảy ra lỗi. Vui lòng thử lại!')
       } finally {
         setIsLoading(false)
@@ -161,28 +158,23 @@ function DepartmentCategory() {
       //call api post new data
       try {
         setIsLoading(true)
-        const response = await axiosClient.post('admin/news-category', {
-          cat_name: values.title,
+        const response = await axiosClient.post('/group', {
+          name: values.title,
           description: values.description,
-          friendly_url: values.friendlyUrl,
-          friendly_title: values.pageTitle,
-          metakey: values.metaKeyword,
-          metadesc: values.metaDesc,
-          display: values.visible,
         })
 
         if (response.data.status === true) {
-          toast.success('Thêm mới danh mục thành công!')
+          toast.success('Thêm mới nhóm kinh doanh thành công!')
           resetForm()
-          navigate('/news/category?sub=add')
-          fetchDataNewsCategory()
+          navigate('/admin/QuanLiPhongBan?sub=add')
+          fetchDataGroupsAdmin()
         }
 
         if (response.data.status === false && response.data.mess == 'no permission') {
           toast.warn('Bạn không có quyền thực hiện tác vụ này!')
         }
       } catch (error) {
-        console.error('Post data news category is error', error)
+        console.error('Post data admin groups is error', error)
         toast.error('Đã xảy ra lỗi. Vui lòng thử lại!')
       } finally {
         setIsLoading(false)
@@ -202,10 +194,10 @@ function DepartmentCategory() {
   const handleDelete = async () => {
     setVisible(true)
     try {
-      const response = await axiosClient.delete(`admin/news-category/${deletedId}`)
+      const response = await axiosClient.delete(`/group/${deletedId}`)
       if (response.data.status === true) {
         setVisible(false)
-        fetchDataNewsCategory()
+        fetchDataGroupsAdmin()
       }
 
       if (response.data.status === false && response.data.mess == 'no permission') {
@@ -231,20 +223,19 @@ function DepartmentCategory() {
 
   // search Data
   const handleSearch = (keyword) => {
-    fetchDataNewsCategory(keyword)
+    fetchDataGroupsAdmin(keyword)
   }
   const handleDeleteAll = async () => {
     try {
-      const response = await axiosClient.post(`admin/delete-all-news-category`, {
-        data: selectedCheckbox,
+      const response = await axiosClient.post(`/groups/delete`, {
+        ids: selectedCheckbox,
+        _method: 'DELETE',
       })
-
       if (response.data.status === true) {
-        toast.success('Xóa tất cả danh mục thành công!')
-        fetchDataNewsCategory()
+        toast.success('Xóa các mục đã chọn thành công!')
+        fetchDataGroupsAdmin()
         setSelectedCheckbox([])
       }
-
       if (response.data.status === false && response.data.mess == 'no permission') {
         toast.warn('Bạn không có quyền thực hiện tác vụ này!')
       }
@@ -254,8 +245,8 @@ function DepartmentCategory() {
   }
 
   const items =
-    dataNewsCategory && dataNewsCategory?.length > 0
-      ? dataNewsCategory.map((item) => ({
+    dataGroupAdmin && dataGroupAdmin?.length > 0
+      ? dataGroupAdmin.map((item) => ({
           id: (
             <CFormCheck
               key={item?.id}
@@ -265,12 +256,12 @@ function DepartmentCategory() {
               value={item?.id}
               checked={selectedCheckbox.includes(item?.id)}
               onChange={(e) => {
-                const categoriesId = item?.id
+                const groupId = item?.id
                 const isChecked = e.target.checked
                 if (isChecked) {
-                  setSelectedCheckbox([...selectedCheckbox, categoriesId])
+                  setSelectedCheckbox([...selectedCheckbox, groupId])
                 } else {
-                  setSelectedCheckbox(selectedCheckbox.filter((id) => id !== categoriesId))
+                  setSelectedCheckbox(selectedCheckbox.filter((id) => id !== groupId))
                 }
               }}
             />
@@ -311,7 +302,7 @@ function DepartmentCategory() {
             const isChecked = e.target.checked
             setIsAllCheckbox(isChecked)
             if (isChecked) {
-              const allIds = dataNewsCategory?.map((item) => item.id) || []
+              const allIds = dataGroupAdmin?.map((item) => item.id) || []
               setSelectedCheckbox(allIds)
             } else {
               setSelectedCheckbox([])
@@ -357,7 +348,7 @@ function DepartmentCategory() {
               >
                 Thêm mới
               </CButton>
-              <Link to={'/product/brand'}>
+              <Link to={'/admin/QuanLiPhongBan'}>
                 <CButton color="primary" type="submit" size="sm">
                   Danh sách
                 </CButton>
@@ -429,17 +420,17 @@ function DepartmentCategory() {
           </CCol>
 
           <CCol>
-            <Search count={dataNewsCategory?.length} onSearchData={handleSearch} />
+            <Search count={dataGroupAdmin?.length} onSearchData={handleSearch} />
             <CCol md={12} className="mt-3">
               <CButton onClick={handleDeleteAll} color="primary" size="sm">
-                Xóa vĩnh viễn
+                Xóa mục được chọn
               </CButton>
             </CCol>
             <CTable className="mt-2" columns={columns} items={items} />
 
             <div className="d-flex justify-content-end">
               <ReactPaginate
-                pageCount={Math.ceil(dataNewsCategory?.length / 15)}
+                pageCount={Math.ceil(dataGroupAdmin?.length / 15)}
                 pageRangeDisplayed={3}
                 marginPagesDisplayed={1}
                 pageClassName="page-item"

@@ -3,14 +3,10 @@ import {
   CButton,
   CCol,
   CContainer,
-  CForm,
   CFormInput,
-  CImage,
   CRow,
   CFormSelect,
   CTable,
-  CPagination,
-  CPaginationItem,
   CFormCheck,
   CSpinner,
 } from '@coreui/react'
@@ -43,12 +39,13 @@ function AdminList() {
 
   const [dataRole, setDataRole] = useState([])
   const [adminListData, setAdminListData] = useState([])
+  const [pagination, setPagination] = useState({})
   const [roleChoosen, setRoleChoosen] = useState('')
+  const [departmentChoosen, setDepartmentChoosene] = useState('')
 
   // loading button
   const [isLoadingButton, setIsLoadingButton] = useState(false)
 
-  // selected checkbox
   // selected checkbox
   const [isAllCheckbox, setIsAllCheckbox] = useState(false)
   const [selectedCheckbox, setSelectedCheckbox] = useState([])
@@ -74,19 +71,16 @@ function AdminList() {
     username: '',
     password: '',
     email: '',
-    phone: '',
     displayName: '',
     role: '',
-    groups: [],
+    groups: '',
   }
 
   const validationSchema = Yup.object({
     username: Yup.string().required('Tên đăng nhập là bắt buộc.'),
     // password: Yup.string().required('Mật khẩu là bắt buộc.'),
     email: Yup.string().email('Địa chỉ email không hợp lệ.').required('Email là bắt buộc.'),
-    phone: Yup.string().required('Số điện thoại là bắt buộc.'),
     displayName: Yup.string().required('Tên hiển thị là bắt buộc.'),
-    role: Yup.string().required('Vai trò là bắt buộc.'),
   })
 
   useEffect(() => {
@@ -102,17 +96,16 @@ function AdminList() {
 
   const fetchDataById = async (setValues) => {
     try {
-      const response = await axiosClient.get(`/admin/information/${id}/edit`)
-      const data = response.data.userAdminDetail
+      const response = await axiosClient.get(`/admin/${id}`)
+      const data = response.data.admin_detail
 
       if (data && response.data.status === true) {
         setValues({
           username: data.username,
-          // password: '',
           email: data.email,
           displayName: data.display_name,
-          phone: data.phone,
-          role: data?.roles[0].id,
+          role: data?.is_manager,
+          groups: data?.business_group_id,
         })
         setSelectedFile(data.avatar)
       } else {
@@ -123,12 +116,12 @@ function AdminList() {
     }
   }
 
-  const fetchAdminGroupData = async () => {
+  const fetchDataGroups = async () => {
     try {
-      const response = await axiosClient.get(`admin/role`)
+      const response = await axiosClient.get(`/group`)
 
-      if (response.data.status === true) {
-        setDataRole(response.data.roles)
+      if (response.data && response.data.status === true) {
+        setDataRole(response.data.data)
       }
     } catch (error) {
       console.error('Fetch role adminstrator data is error', error)
@@ -136,17 +129,18 @@ function AdminList() {
   }
 
   useEffect(() => {
-    fetchAdminGroupData()
+    fetchDataGroups()
   }, [])
 
   const fetchAdminListData = async (dataSearch = '') => {
     try {
       const response = await axiosClient.get(
-        `/admin/information?data=${dataSearch}&page=${pageNumber}&role_id=${roleChoosen}`,
+        `/admin?data=${dataSearch}&page=${pageNumber}&group_id=${roleChoosen}`,
       )
 
-      if (response.data.status === true) {
-        setAdminListData(response.data.adminList)
+      if (response.data && response.data.status === true) {
+        setAdminListData(response.data.data)
+        setPagination(response.data.pagination)
       }
 
       if (response.data.status === false && response.data.mess == 'no permission') {
@@ -166,20 +160,19 @@ function AdminList() {
       //call api update data
       try {
         setIsLoadingButton(true)
-        const response = await axiosClient.put(`/admin/information/${id}`, {
-          // username: values.username,
-          // password: values.password,
+        const response = await axiosClient.put(`/admin/${id}`, {
+          username: values.username,
+          password: values.password,
           email: values.email,
           display_name: values.displayName,
-          avatar: selectedFile,
-          phone: values.phone,
-          role_id: values.role,
+          is_manager: values.role,
+          business_group_id: values.groups,
         })
         if (response.data.status === true) {
           toast.success('Cập nhật thông tin admin thành công!')
           resetForm()
           fetchAdminListData()
-          navigate('/admin/list')
+          navigate('/admin/QuanLiTaiKhoanAdmin')
         }
 
         if (response.data.status === false && response.data.mess == 'no permission') {
@@ -194,22 +187,19 @@ function AdminList() {
       //call api post new data
       try {
         setIsLoadingButton(true)
-        const response = await axiosClient.post('/admin/information', {
+        const response = await axiosClient.post('/admin', {
           username: values.username,
           password: values.password,
           email: values.email,
           display_name: values.displayName,
-          avatar: selectedFile,
-          phone: values.phone,
-          role_id: values.role,
+          is_manager: values.role,
+          business_group_id: values.groups,
         })
 
         if (response.data.status === true) {
           toast.success('Thêm mới thông tin admin thành công!')
           resetForm()
-          setFile([])
-          setSelectedFile([])
-          navigate('/admin/list?sub=add')
+          navigate('/admin/QuanLiTaiKhoanAdmin?sub=add')
           fetchAdminListData()
         }
 
@@ -225,11 +215,11 @@ function AdminList() {
   }
 
   const handleAddNewClick = () => {
-    navigate('/admin/list?sub=add')
+    navigate('/admin/QuanLiTaiKhoanAdmin?sub=add')
   }
 
   const handleEditClick = (id) => {
-    navigate(`/admin/list?id=${id}&sub=edit`)
+    navigate(`/admin/QuanLiTaiKhoanAdmin?id=${id}&sub=edit`)
   }
 
   // delete row
@@ -260,12 +250,13 @@ function AdminList() {
     // alert('Chức năng đang thực hiện...')
 
     try {
-      const response = await axiosClient.post(`/admin/delete-all-admin`, {
-        data: selectedCheckbox,
+      const response = await axiosClient.post(`/profile/delete`, {
+        ids: selectedCheckbox,
+        _method: 'DELETE',
       })
 
       if (response.data.status === true) {
-        toast.success('Xóa tất cả thành công!')
+        toast.success('Xóa các mục đã chọn thành công!')
         fetchAdminListData()
         setSelectedCheckbox([])
       }
@@ -318,8 +309,8 @@ function AdminList() {
   }
 
   const items =
-    adminListData?.data && adminListData?.data?.length > 0
-      ? adminListData?.data.map((item) => ({
+    adminListData && adminListData?.length > 0
+      ? adminListData.map((item) => ({
           id: (
             <CFormCheck
               id={item.id}
@@ -337,11 +328,8 @@ function AdminList() {
             />
           ),
           username: <div className="blue-txt">{item.username}</div>,
-          role: item.roles && item?.roles.length > 0 ? item.roles[0].title : 'Không',
-          visited:
-            item.lastlogin !== '0'
-              ? moment.unix(item?.lastlogin).format('DD-MM-YYYY, hh:mm:ss A')
-              : 'Chưa từng đăng nhập',
+          displayName: item.display_name,
+          group: item.business_group_name,
           actions: (
             <div>
               <button
@@ -392,15 +380,20 @@ function AdminList() {
       _props: { scope: 'col' },
     },
     {
-      key: 'role',
-      label: 'Vai trò',
+      key: 'displayName',
+      label: 'Tên hiển thị',
       _props: { scope: 'col' },
     },
     {
-      key: 'visited',
-      label: 'Đăng nhập gần đây',
+      key: 'group',
+      label: 'Nhóm kinh doanh',
       _props: { scope: 'col' },
     },
+    // {
+    //   key: 'visited',
+    //   label: 'Đăng nhập gần đây',
+    //   _props: { scope: 'col' },
+    // },
     {
       key: 'actions',
       label: 'Tác vụ',
@@ -507,8 +500,8 @@ function AdminList() {
                           id="role-select"
                           options={[
                             { label: 'Chọn chức vụ', value: '', disabled: true },
-                            { label: 'Trưởng nhóm', value: 1, disabled: true },
-                            { label: 'Nhân viên', value: 0, disabled: true },
+                            { label: 'Trưởng nhóm', value: 1 },
+                            { label: 'Nhân viên', value: 0 },
                           ]}
                         />
                         <ErrorMessage name="role" component="div" className="text-danger" />
@@ -522,9 +515,13 @@ function AdminList() {
                           as={CFormSelect}
                           id="groups-select"
                           options={[
-                            { label: 'Chọn nhóm kinh doanh', value: '', disabled: true },
-                            { label: 'Máy in', value: '1' },
-                            { label: 'Mực in', value: '2' },
+                            { label: 'Chọn chức vụ', value: '', disabled: true },
+                            ...(Array.isArray(dataRole) && dataRole.length > 0
+                              ? dataRole.map((role) => ({
+                                  label: role.name,
+                                  value: role.id,
+                                }))
+                              : []),
                           ]}
                         />
                         <ErrorMessage name="groups" component="div" className="text-danger" />
@@ -570,7 +567,7 @@ function AdminList() {
                     <tbody>
                       <tr>
                         <td>Tổng cộng</td>
-                        <td className="total-count">{adminListData?.total}</td>
+                        <td className="total-count">{pagination?.total}</td>
                       </tr>
                       <tr>
                         <td>Lọc</td>
@@ -581,7 +578,7 @@ function AdminList() {
                             options={[
                               { label: 'Tất cả', value: '' },
                               ...(Array.isArray(dataRole) && dataRole.length > 0
-                                ? dataRole.map((role) => ({ label: role.title, value: role.id }))
+                                ? dataRole.map((role) => ({ label: role.name, value: role.id }))
                                 : []),
                             ]}
                             value={roleChoosen}
@@ -618,7 +615,7 @@ function AdminList() {
                 <CTable className="mt-2" columns={columns} items={items} />
                 <div className="d-flex justify-content-end">
                   <ReactPaginate
-                    pageCount={Math.ceil(adminListData?.total / adminListData?.per_page)}
+                    pageCount={Math.ceil(pagination?.total / pagination?.per_page)}
                     pageRangeDisplayed={3}
                     marginPagesDisplayed={1}
                     pageClassName="page-item"

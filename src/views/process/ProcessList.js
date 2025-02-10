@@ -3,18 +3,20 @@ import CIcon from '@coreui/icons-react'
 import {
   CButton,
   CCol,
-  CContainer,
   CFormCheck,
   CFormInput,
-  CFormSelect,
-  CImage,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
   CRow,
   CTable,
   CTooltip,
 } from '@coreui/react'
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { axiosClient, imageBaseUrl } from '../../axiosConfig'
+import { axiosClient } from '../../axiosConfig'
 import moment from 'moment/moment'
 
 import ReactPaginate from 'react-paginate'
@@ -33,6 +35,38 @@ function ProcressList() {
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+
+  const [noteData, setNoteData] = useState('')
+
+  const [errors, setErrors] = useState({ startDate: '', endDate: '' })
+
+  const handleDateChange = (field, value) => {
+    if (field === 'startDate') {
+      setStartDate(value)
+      if (endDate && value > endDate) {
+        setErrors((prev) => ({
+          ...prev,
+          startDate: 'Ngày bắt đầu không thể lớn hơn ngày kết thúc',
+        }))
+      } else {
+        setErrors((prev) => ({ ...prev, startDate: '' }))
+      }
+    }
+
+    if (field === 'endDate') {
+      setEndDate(value)
+      if (startDate && value < startDate) {
+        setErrors((prev) => ({ ...prev, endDate: 'Ngày kết thúc không thể nhỏ hơn ngày bắt đầu' }))
+      } else {
+        setErrors((prev) => ({ ...prev, endDate: '' }))
+      }
+    }
+  }
+
+  const [isManager, setIsManager] = useState(false)
+  const [noteModalVisible, setNoteModalVisible] = useState(false)
+  const [customerInfo, setCustomerInfo] = useState({})
+  const [note, setNote] = useState('')
 
   // check permission state
   const [isPermissionCheck, setIsPermissionCheck] = useState(true)
@@ -65,9 +99,16 @@ function ProcressList() {
     fetchDataTracker(keyword)
   }
 
+  const convertDateTime = (date) => {
+    const data = moment(date).format('DD-MM-YYYY')
+    return data
+  }
+
   const fetchDataTracker = async (dataSearch = '') => {
     try {
-      const response = await axiosClient.get(`sales/index?page=${pageNumber}`)
+      const response = await axiosClient.get(
+        `sales/index?page=${pageNumber}&data=${dataSearch}&start_time=${startDate !== '' ? convertDateTime(startDate) : ''}&end_time=${endDate !== '' ? convertDateTime(endDate) : ''}`,
+      )
 
       if (response.data && response.data.status === true) {
         setDataTracker(response.data.data)
@@ -84,7 +125,32 @@ function ProcressList() {
 
   useEffect(() => {
     fetchDataTracker()
-  }, [pageNumber, selectedCategory])
+  }, [pageNumber, selectedCategory, startDate, endDate])
+
+  // Fetch API to check delete action from user
+  const fetchAdminInfo = async () => {
+    try {
+      const response = await axiosClient.get('/profile')
+      if (response.data && response.data.status === true) {
+        const isManager = response.data.admin_detail.is_manager
+        if (isManager === 1) {
+          setIsManager(true)
+        }
+      }
+    } catch (error) {
+      console.error('Fetch data info user is error', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchAdminInfo()
+  }, [])
+
+  // const fetchNoteData = async () => {
+  //   try {
+  //     const response = await axiosClient.get('/sale/')
+  //   } catch (error) {}
+  // }
 
   // pagination data
   const handlePageChange = ({ selected }) => {
@@ -173,7 +239,7 @@ function ProcressList() {
           price: <div className="red-text">{item?.price}</div>,
           results: (
             <CTooltip content={item?.sales_result}>
-              <div className="truncate">{item?.sales_result}</div>
+              <div className="truncate fw-bold">{item?.sales_result}</div>
             </CTooltip>
           ),
           suggestions: (
@@ -185,13 +251,26 @@ function ProcressList() {
             <div>
               <button
                 onClick={() => {
-                  setVisible(true)
-                  setDeletedId(item.id)
+                  setNoteModalVisible((prev) => !prev)
+                  setCustomerInfo(item)
                 }}
-                className="button-action bg-danger"
+                className="button-action bg-warning"
               >
-                <CIcon icon={cilTrash} className="text-white" />
+                <CTooltip content={'Tạo ghi chú'}>
+                  <CIcon icon={cilColorBorder} className="text-white" />
+                </CTooltip>
               </button>
+              {isManager && (
+                <button
+                  onClick={() => {
+                    setVisible(true)
+                    setDeletedId(item.id)
+                  }}
+                  className="button-action bg-danger mt-2"
+                >
+                  <CIcon icon={cilTrash} className="text-white" />
+                </button>
+              )}
             </div>
           ),
           _cellProps: { id: { scope: 'row' } },
@@ -274,6 +353,64 @@ function ProcressList() {
     },
   ]
 
+  const handleSubmitNote = async () => {
+    // if (note === '') {
+    //   alert('Xin vui lòng nhập ghi chú trước khi lưu!')
+    // }
+
+    alert('Chức năng đang phát triển ')
+  }
+
+  const NoteModal = ({ record }) => {
+    return (
+      <CModal visible={noteModalVisible} onClose={() => setNoteModalVisible(false)}>
+        <CModalHeader closeButton>
+          <CModalTitle>Ghi chú giao dịch</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <div className="note__info-customer mb-3">
+            <div className="mb-1 d-flex gap-2">
+              <label style={{ wordBreak: 'nowrap' }} className="form-label ">
+                Tên khách hàng:
+              </label>
+              <CTooltip content={record.customer_name}>
+                <div className="truncate-2-lines">{record.customer_name}</div>
+              </CTooltip>
+            </div>
+            <div className="mb-1 d-flex">
+              <label style={{ wordBreak: 'nowrap' }} className="form-label">
+                Mặt hàng:{' '}
+              </label>
+              <CTooltip content={record.item}>
+                <div className="truncate-2-lines">{record.item}</div>
+              </CTooltip>
+            </div>
+            <div className="mb-1 d-flex gap-2">
+              <label className="form-label">Số lượng:</label>
+              <div>{record.quantity}</div>
+            </div>
+            <div className=" d-flex gap-2">
+              <label className="form-label">Kết quả giao dịch:</label>
+              <div>{record.sales_result}</div>
+            </div>
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Nội dung ghi chú:</label>
+            <textarea className="form-control" rows="8" placeholder="Nhập nội dung ghi chú..." />
+          </div>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setNoteModalVisible(false)}>
+            Hủy
+          </CButton>
+          <CButton color="primary" onClick={handleSubmitNote}>
+            Lưu
+          </CButton>
+        </CModalFooter>
+      </CModal>
+    )
+  }
+
   return (
     <div>
       {!isPermissionCheck ? (
@@ -285,6 +422,7 @@ function ProcressList() {
         </h5>
       ) : (
         <CRow>
+          <NoteModal record={customerInfo} />
           <DeletedModal visible={visible} setVisible={setVisible} onDelete={handleDelete} />
 
           <CCol xs={12} className="mb-3">
@@ -323,16 +461,20 @@ function ProcressList() {
                             <CFormInput
                               type="date"
                               value={startDate}
-                              onChange={(e) => setStartDate(e.target.value)}
+                              onChange={(e) => handleDateChange('startDate', e.target.value)}
                             />
+                            {errors.startDate && (
+                              <div className="text-danger">{errors.startDate}</div>
+                            )}
                           </div>
                           <div>
                             <label>Đến ngày:</label>
                             <CFormInput
                               type="date"
                               value={endDate}
-                              onChange={(e) => setEndDate(e.target.value)}
+                              onChange={(e) => handleDateChange('endDate', e.target.value)}
                             />
+                            {errors.endDate && <div className="text-danger">{errors.endDate}</div>}
                           </div>
                         </div>
                       </td>

@@ -100,7 +100,7 @@ function ProcressList() {
   }
 
   const convertDateTime = (date) => {
-    const data = moment(date).format('DD-MM-YYYY')
+    const data = moment(date).format('DD/MM/YYYY')
     return data
   }
 

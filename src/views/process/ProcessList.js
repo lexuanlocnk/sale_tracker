@@ -5,6 +5,7 @@ import {
   CCol,
   CFormCheck,
   CFormInput,
+  CFormTextarea,
   CModal,
   CModalBody,
   CModalFooter,
@@ -14,8 +15,8 @@ import {
   CTable,
   CTooltip,
 } from '@coreui/react'
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { axiosClient } from '../../axiosConfig'
 import moment from 'moment/moment'
 
@@ -25,9 +26,14 @@ import { toast } from 'react-toastify'
 
 import './public/processList.scss'
 import Loading from '../../components/loading/Loading'
+import NoteModal from './NoteModal'
 
 function ProcressList() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const params = new URLSearchParams(location.search)
+  const id = params.get('id')
 
   const [dataTracker, setDataTracker] = useState([])
   const [countData, setCountData] = useState(null)
@@ -35,8 +41,6 @@ function ProcressList() {
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-
-  const [noteData, setNoteData] = useState('')
 
   const [errors, setErrors] = useState({ startDate: '', endDate: '' })
 
@@ -63,7 +67,7 @@ function ProcressList() {
     }
   }
 
-  const [isManager, setIsManager] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [noteModalVisible, setNoteModalVisible] = useState(false)
   const [customerInfo, setCustomerInfo] = useState({})
   const [note, setNote] = useState('')
@@ -71,7 +75,6 @@ function ProcressList() {
   // check permission state
   const [isPermissionCheck, setIsPermissionCheck] = useState(true)
 
-  const [dataNewsCategory, setDataNewsCategroy] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('')
 
   // show deleted Modal
@@ -125,16 +128,16 @@ function ProcressList() {
 
   useEffect(() => {
     fetchDataTracker()
-  }, [pageNumber, selectedCategory, startDate, endDate])
+  }, [pageNumber, startDate, endDate])
 
   // Fetch API to check delete action from user
   const fetchAdminInfo = async () => {
     try {
       const response = await axiosClient.get('/profile')
       if (response.data && response.data.status === true) {
-        const isManager = response.data.admin_detail.is_manager
-        if (isManager === 1) {
-          setIsManager(true)
+        const isAdmin = response.data.admin_detail.is_admin
+        if (isAdmin) {
+          setIsAdmin(true)
         }
       }
     } catch (error) {
@@ -146,11 +149,20 @@ function ProcressList() {
     fetchAdminInfo()
   }, [])
 
-  // const fetchNoteData = async () => {
-  //   try {
-  //     const response = await axiosClient.get('/sale/')
-  //   } catch (error) {}
-  // }
+  const fetchDataNotesById = async () => {
+    try {
+      const response = await axiosClient.get(`/sale/${id}`)
+      if (response.data && response.data.status === true) {
+        setNote(response.data.data.note || '')
+      }
+    } catch (error) {
+      console.log('Fetch sale note data id is error', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchDataNotesById()
+  }, [id])
 
   // pagination data
   const handlePageChange = ({ selected }) => {
@@ -253,6 +265,7 @@ function ProcressList() {
                 onClick={() => {
                   setNoteModalVisible((prev) => !prev)
                   setCustomerInfo(item)
+                  navigate(`/dataTracking?id=${item.id}`)
                 }}
                 className="button-action bg-warning"
               >
@@ -260,7 +273,7 @@ function ProcressList() {
                   <CIcon icon={cilColorBorder} className="text-white" />
                 </CTooltip>
               </button>
-              {isManager && (
+              {isAdmin && (
                 <button
                   onClick={() => {
                     setVisible(true)
@@ -353,64 +366,6 @@ function ProcressList() {
     },
   ]
 
-  const handleSubmitNote = async () => {
-    // if (note === '') {
-    //   alert('Xin vui lòng nhập ghi chú trước khi lưu!')
-    // }
-
-    alert('Chức năng đang phát triển ')
-  }
-
-  const NoteModal = ({ record }) => {
-    return (
-      <CModal visible={noteModalVisible} onClose={() => setNoteModalVisible(false)}>
-        <CModalHeader closeButton>
-          <CModalTitle>Ghi chú giao dịch</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <div className="note__info-customer mb-3">
-            <div className="mb-1 d-flex gap-2">
-              <label style={{ wordBreak: 'nowrap' }} className="form-label ">
-                Tên khách hàng:
-              </label>
-              <CTooltip content={record.customer_name}>
-                <div className="truncate-2-lines">{record.customer_name}</div>
-              </CTooltip>
-            </div>
-            <div className="mb-1 d-flex">
-              <label style={{ wordBreak: 'nowrap' }} className="form-label">
-                Mặt hàng:{' '}
-              </label>
-              <CTooltip content={record.item}>
-                <div className="truncate-2-lines">{record.item}</div>
-              </CTooltip>
-            </div>
-            <div className="mb-1 d-flex gap-2">
-              <label className="form-label">Số lượng:</label>
-              <div>{record.quantity}</div>
-            </div>
-            <div className=" d-flex gap-2">
-              <label className="form-label">Kết quả giao dịch:</label>
-              <div>{record.sales_result}</div>
-            </div>
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Nội dung ghi chú:</label>
-            <textarea className="form-control" rows="8" placeholder="Nhập nội dung ghi chú..." />
-          </div>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={() => setNoteModalVisible(false)}>
-            Hủy
-          </CButton>
-          <CButton color="primary" onClick={handleSubmitNote}>
-            Lưu
-          </CButton>
-        </CModalFooter>
-      </CModal>
-    )
-  }
-
   return (
     <div>
       {!isPermissionCheck ? (
@@ -422,9 +377,15 @@ function ProcressList() {
         </h5>
       ) : (
         <CRow>
-          <NoteModal record={customerInfo} />
           <DeletedModal visible={visible} setVisible={setVisible} onDelete={handleDelete} />
-
+          <NoteModal
+            visible={noteModalVisible}
+            setVisible={setNoteModalVisible}
+            note={note}
+            setNote={setNote}
+            recordId={id}
+            record={customerInfo}
+          />
           <CCol xs={12} className="mb-3">
             <CCol>
               <h3>QUẢN LÝ KHÁCH HÀNG</h3>
@@ -482,6 +443,7 @@ function ProcressList() {
                     <tr>
                       <td>Tìm kiếm</td>
                       <td>
+                        <strong>Tìm kiếm theo Tên kinh doanh, Tên khách hàng, Mặt hàng</strong>
                         <input
                           type="text"
                           className="search-input"

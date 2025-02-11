@@ -50,7 +50,7 @@ const Login = () => {
 
       if (res.data && res.data.status === true) {
         localStorage.setItem('saleToken', res.data.token)
-        localStorage.setItem('username', res.data.display_name)
+        localStorage.setItem('username', res.data.username)
         navigate('/dataTracking')
       } else if (res.data && res.data.status === false && res.data.message) {
         toast.error(errorMessages[res.data.message] || 'Đã xảy ra lỗi. Vui lòng thử lại!')

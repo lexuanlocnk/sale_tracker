@@ -1,21 +1,7 @@
 import { cilColorBorder, cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import {
-  CButton,
-  CCol,
-  CFormCheck,
-  CFormInput,
-  CFormTextarea,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CRow,
-  CTable,
-  CTooltip,
-} from '@coreui/react'
-import React, { useEffect, useRef, useState } from 'react'
+import { CButton, CCol, CFormCheck, CFormInput, CRow, CTable, CTooltip } from '@coreui/react'
+import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { axiosClient } from '../../axiosConfig'
 import moment from 'moment/moment'
@@ -99,6 +85,7 @@ function ProcressList() {
 
   // search Data
   const handleSearch = (keyword) => {
+    setDataSearch(keyword)
     fetchDataTracker(keyword)
   }
 
@@ -107,10 +94,10 @@ function ProcressList() {
     return data
   }
 
-  const fetchDataTracker = async (dataSearch = '') => {
+  const fetchDataTracker = async (searchKeyword = dataSearch) => {
     try {
       const response = await axiosClient.get(
-        `sales/index?page=${pageNumber}&data=${dataSearch}&start_time=${startDate !== '' ? convertDateTime(startDate) : ''}&end_time=${endDate !== '' ? convertDateTime(endDate) : ''}`,
+        `sales/index?page=${pageNumber}&data=${searchKeyword}&start_time=${startDate !== '' ? convertDateTime(startDate) : ''}&end_time=${endDate !== '' ? convertDateTime(endDate) : ''}`,
       )
 
       if (response.data && response.data.status === true) {
@@ -254,11 +241,7 @@ function ProcressList() {
               <div className="truncate fw-bold">{item?.sales_result}</div>
             </CTooltip>
           ),
-          suggestions: (
-            <CTooltip content={item?.suggestions}>
-              <div className="truncate blue-text">{item?.suggestions}</div>
-            </CTooltip>
-          ),
+
           actions: (
             <div>
               <button
@@ -354,12 +337,6 @@ function ProcressList() {
     },
 
     {
-      key: 'suggestions',
-      label: 'Gợi ý cho kinh doanh',
-      _props: { scope: 'col', className: 'table-header' },
-    },
-
-    {
       key: 'actions',
       label: 'Tác vụ',
       _props: { scope: 'col', className: 'table-header' },
@@ -388,7 +365,7 @@ function ProcressList() {
           />
           <CCol xs={12} className="mb-3">
             <CCol>
-              <h3>QUẢN LÝ KHÁCH HÀNG</h3>
+              <h3>QUẢN LÝ GIAO DỊCH</h3>
             </CCol>
           </CCol>
 

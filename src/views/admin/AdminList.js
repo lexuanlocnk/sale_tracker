@@ -9,6 +9,7 @@ import {
   CTable,
   CFormCheck,
   CSpinner,
+  CTooltip,
 } from '@coreui/react'
 import './css/adminList.css'
 import CIcon from '@coreui/icons-react'
@@ -22,6 +23,7 @@ import * as Yup from 'yup'
 import { axiosClient, imageBaseUrl } from '../../axiosConfig'
 import moment from 'moment/moment'
 import { toast } from 'react-toastify'
+import ChangePasswordForm from '../../components/ChangePasswordForm'
 
 function AdminList() {
   const location = useLocation()
@@ -33,6 +35,8 @@ function AdminList() {
 
   // check permission state
   const [isPermissionCheck, setIsPermissionCheck] = useState(true)
+
+  const [showForm, setShowForm] = useState(false)
 
   const [isEditing, setIsEditing] = useState(false)
   const inputRef = useRef(null)
@@ -93,6 +97,24 @@ function AdminList() {
       setIsEditing(true)
     }
   }, [location.search])
+
+  const [defaultPassword, setDefaultPassword] = useState('')
+
+  const getDefaultPassword = async () => {
+    try {
+      const response = await axiosClient.get('/password/get-default-password')
+
+      if (response.data && response.data.status === true) {
+        setDefaultPassword(response.data.default_password)
+      }
+    } catch (error) {
+      console.error('Fetch default password failed', error)
+    }
+  }
+
+  useEffect(() => {
+    getDefaultPassword()
+  }, [])
 
   const fetchDataById = async (setValues) => {
     try {
@@ -246,6 +268,20 @@ function AdminList() {
     fetchAdminListData(keyword)
   }
 
+  const handleResetPassword = async () => {
+    try {
+      const response = await axiosClient.post(`/password/update-password/${id}`, {
+        _method: 'PATCH',
+      })
+      if (response.data.status === true) {
+        toast.success('Đã reset mật khẩu về mặc định!')
+      }
+    } catch (error) {
+      console.error('Reset password is error', error)
+      toast.error('Đã xảy ra lỗi. Vui lòng thử lại!')
+    }
+  }
+
   const handleDeleteAll = async () => {
     // alert('Chức năng đang thực hiện...')
 
@@ -389,17 +425,17 @@ function AdminList() {
       label: 'Nhóm kinh doanh',
       _props: { scope: 'col' },
     },
-    // {
-    //   key: 'visited',
-    //   label: 'Đăng nhập gần đây',
-    //   _props: { scope: 'col' },
-    // },
+
     {
       key: 'actions',
       label: 'Tác vụ',
       _props: { scope: 'col' },
     },
   ]
+
+  const handleOpenChangePasswordForm = () => {
+    setShowForm((prev) => !prev)
+  }
 
   return (
     <CContainer>
@@ -412,6 +448,15 @@ function AdminList() {
         </h5>
       ) : (
         <>
+          {showForm && (
+            <ChangePasswordForm
+              title={'Thay đổi mật khẩu mặc định'}
+              isOpen={showForm}
+              onClose={handleOpenChangePasswordForm}
+              type={'changeDefaultPassword'}
+              defaultPassword={defaultPassword}
+            />
+          )}
           <DeletedModal visible={visible} setVisible={setVisible} onDelete={handleDelete} />
           <CRow className="mb-3">
             <CCol md={6}>
@@ -419,6 +464,15 @@ function AdminList() {
             </CCol>
             <CCol md={6}>
               <div className="d-flex justify-content-end">
+                <CButton
+                  onClick={handleOpenChangePasswordForm}
+                  color="primary"
+                  type="submit"
+                  size="sm"
+                  className="button-add"
+                >
+                  Đổi MKMĐ
+                </CButton>
                 <CButton
                   onClick={handleAddNewClick}
                   color="primary"
@@ -540,6 +594,18 @@ function AdminList() {
                             'Thêm mới'
                           )}
                         </CButton>
+
+                        <CTooltip content="Đặt lại mật khẩu mặc định cho user">
+                          <CButton
+                            onClick={handleResetPassword}
+                            className="ms-3"
+                            color="warning"
+                            type="button"
+                            size="sm"
+                          >
+                            Reset Password
+                          </CButton>
+                        </CTooltip>
                       </CCol>
                     </Form>
                   )

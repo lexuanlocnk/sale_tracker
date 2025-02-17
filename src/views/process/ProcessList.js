@@ -1,6 +1,16 @@
 import { cilColorBorder, cilTrash } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
-import { CButton, CCol, CFormCheck, CFormInput, CRow, CTable, CTooltip } from '@coreui/react'
+import {
+  CButton,
+  CCol,
+  CFormCheck,
+  CFormInput,
+  CFormLabel,
+  CFormSelect,
+  CRow,
+  CTable,
+  CTooltip,
+} from '@coreui/react'
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { axiosClient } from '../../axiosConfig'
@@ -24,6 +34,9 @@ function ProcressList() {
   const [dataTracker, setDataTracker] = useState([])
   const [countData, setCountData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  const [saleList, setSaleList] = useState([])
+  const [selectedSale, setSelectedSale] = useState('')
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -61,8 +74,6 @@ function ProcressList() {
   // check permission state
   const [isPermissionCheck, setIsPermissionCheck] = useState(true)
 
-  const [selectedCategory, setSelectedCategory] = useState('')
-
   // show deleted Modal
   const [visible, setVisible] = useState(false)
   const [deletedId, setDeletedId] = useState(null)
@@ -94,10 +105,25 @@ function ProcressList() {
     return data
   }
 
+  const fetchSaleList = async () => {
+    try {
+      const response = await axiosClient.get('/listEmployee')
+      if (response.data && response.data.status === true) {
+        setSaleList(response.data.data)
+      }
+    } catch (error) {
+      console.error('Fetch sale list data is error', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchSaleList()
+  }, [])
+
   const fetchDataTracker = async (searchKeyword = dataSearch) => {
     try {
       const response = await axiosClient.get(
-        `sales/index?page=${pageNumber}&data=${searchKeyword}&start_time=${startDate !== '' ? convertDateTime(startDate) : ''}&end_time=${endDate !== '' ? convertDateTime(endDate) : ''}`,
+        `sales/index?page=${pageNumber}&data=${searchKeyword}&start_time=${startDate !== '' ? convertDateTime(startDate) : ''}&end_time=${endDate !== '' ? convertDateTime(endDate) : ''}&id=${selectedSale}`,
       )
 
       if (response.data && response.data.status === true) {
@@ -115,7 +141,7 @@ function ProcressList() {
 
   useEffect(() => {
     fetchDataTracker()
-  }, [pageNumber, startDate, endDate])
+  }, [pageNumber, startDate, endDate, selectedSale])
 
   // Fetch API to check delete action from user
   const fetchAdminInfo = async () => {
@@ -419,7 +445,24 @@ function ProcressList() {
                     </tr>
                     <tr>
                       <td>Tìm kiếm</td>
+
                       <td>
+                        <CFormLabel>Chọn nhân viên kinh doanh</CFormLabel>
+                        <CFormSelect
+                          className="component-size w-50 mb-2"
+                          aria-label="Chọn yêu cầu lọc"
+                          options={[
+                            { label: 'Tất cả', value: '' },
+                            ...(Array.isArray(saleList) && saleList.length > 0
+                              ? saleList.map((sale) => ({
+                                  label: sale.display_name,
+                                  value: sale.id,
+                                }))
+                              : []),
+                          ]}
+                          value={selectedSale}
+                          onChange={(e) => setSelectedSale(e.target.value)}
+                        />
                         <strong>Tìm kiếm theo Tên kinh doanh, Tên khách hàng, Mặt hàng</strong>
                         <input
                           type="text"

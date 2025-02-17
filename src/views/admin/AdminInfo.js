@@ -4,7 +4,9 @@ import {
   CContainer,
   CForm,
   CFormInput,
+  CFormLabel,
   CFormSelect,
+  CFormText,
   CImage,
   CRow,
   CSpinner,
@@ -13,6 +15,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { axiosClient, imageBaseUrl } from '../../axiosConfig'
 import { toast } from 'react-toastify'
+import ChangePasswordForm from '../../components/ChangePasswordForm'
 
 function AdminInfo() {
   const navigate = useNavigate()
@@ -20,10 +23,7 @@ function AdminInfo() {
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
-  const [role, setRole] = useState('Nhân viên')
-  const [businessGroups, setBusinessGroups] = useState([])
-
-  const [avatarFile, setAvatarFile] = useState(null)
+  const [showForm, setShowForm] = useState(false)
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -45,33 +45,6 @@ function AdminInfo() {
   useEffect(() => {
     fetchAdminInformation()
   }, [])
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault()
-  //   try {
-  //     setIsLoading(true)
-  //     const response = await axiosClient.put(`admin/information}`, {
-  //       email: email,
-  //       display_name: displayName,
-  //       avatar: formData,
-  //       phone: phone,
-  //     })
-  //     if (response.data.status === true) {
-  //       toast.success('Cập nhật thông tin admin thành công!')
-  //       fetchAdminInformation()
-  //     }
-  //   } catch (error) {
-  //     console.error('Put data admin info is error', error)
-  //     toast.error('Đã xảy ra lỗi. Vui lòng thử lại!')
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }
-
-  const handleBusinessGroupsChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value)
-    setBusinessGroups(selectedOptions)
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -95,8 +68,19 @@ function AdminInfo() {
     }
   }
 
+  const handleOpenChangePasswordForm = () => {
+    setShowForm((prev) => !prev)
+  }
+
   return (
     <CContainer>
+      {showForm && (
+        <ChangePasswordForm
+          title={'Thay đổi mật khẩu đăng nhập'}
+          isOpen={showForm}
+          onClose={handleOpenChangePasswordForm}
+        />
+      )}
       <CRow className="mb-3">
         <CCol md={6}>
           <h3>THÔNG TIN NHÂN VIÊN</h3>
@@ -117,14 +101,29 @@ function AdminInfo() {
               />
             </CCol>
 
-            <CCol md={12}>
+            {/* <CCol md={12}>
               <CFormInput
                 type="password"
                 id="inputPassword4"
-                label="Mật khẩu mới"
+                label="Mật khẩu"
                 disabled
                 placeholder="Liên hệ admin quản trị để thay đổi."
               />
+            </CCol> */}
+
+            <CCol md={12}>
+              <CFormLabel>Mật khẩu mới</CFormLabel>
+              <CFormText>Thực hiện đổi mật khẩu tài khoản.</CFormText>
+              <div>
+                <CButton
+                  onClick={handleOpenChangePasswordForm}
+                  color="primary"
+                  size="sm"
+                  type="button"
+                >
+                  Tạo mật khẩu
+                </CButton>
+              </div>
             </CCol>
 
             <CCol md={12}>
